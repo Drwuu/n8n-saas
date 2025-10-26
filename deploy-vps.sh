@@ -86,6 +86,18 @@ if [ ! -f ".env.prod" ]; then
     exit 1
 fi
 
+# Configure git to skip tracking changes to template files
+echo -e "${YELLOW}📝 Configuring template files to skip future changes...${NC}"
+if [ -f ".env.example" ]; then
+    git update-index --skip-worktree .env.example 2>/dev/null || echo "Note: .env.example not in git or already configured"
+fi
+if [ -f "DEPLOYMENT-CHECKLIST.local.md" ]; then
+    git update-index --skip-worktree DEPLOYMENT-CHECKLIST.local.md 2>/dev/null || echo "Note: DEPLOYMENT-CHECKLIST.local.md not in git or already configured"
+fi
+if [ -f "DEPLOYMENT-CHECKLIST.vps.md" ]; then
+    git update-index --skip-worktree DEPLOYMENT-CHECKLIST.vps.md 2>/dev/null || echo "Note: DEPLOYMENT-CHECKLIST.vps.md not in git or already configured"
+fi
+
 # Make deployment script executable
 chmod +x up-client.sh
 

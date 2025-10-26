@@ -12,7 +12,7 @@ fi
 
 # Merge env files
 set -a
-source ${CLIENT}.env
+source .env.${CLIENT}
 set +a
 
 echo "🚀 Running '$COMMAND' for client '$CLIENT' in mode '$MODE'..."
