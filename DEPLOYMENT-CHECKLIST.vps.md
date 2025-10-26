@@ -3,16 +3,19 @@
 ## ✅ VPS Deployment Checklist
 
 ### 1. Prerequisites Check
+
 - [ ] Connected to VPS: `ssh user@your-vps-ip`
 - [ ] System is Ubuntu/Debian based: `cat /etc/os-release`
 - [ ] Have sudo privileges: `sudo whoami`
 
 ### 2. Repository Setup
+
 - [ ] Clone repository: `git clone https://github.com/Drwuu/n8n-saas.git`
 - [ ] Navigate to directory: `cd n8n-saas`
 - [ ] Check files: `ls -la`
 
 ### 3. Configuration Files
+
 - [ ] Copy .env.prod from local machine: `scp .env.prod user@your-vps-ip:~/n8n-saas/`
 - [ ] Verify .env.prod exists: `ls -la .env.prod`
 - [ ] Verify domain configuration: `grep N8N_HOST .env.prod`
@@ -21,7 +24,8 @@
 
 ## 🚀 VPS Deployment Commands
 
-### Automated Deployment (Recommended):
+### Automated Deployment (Recommended)
+
 ```bash
 # IMPORTANT: Make sure .env.prod is in the n8n-saas directory first!
 # From local machine: scp .env.prod user@your-vps-ip:~/n8n-saas/
@@ -35,7 +39,8 @@
 ./deploy-vps.sh
 ```
 
-### Manual Deployment (Alternative):
+### Manual Deployment (Alternative)
+
 ```bash
 # Create external network (if not done)
 docker network create proxy
@@ -50,12 +55,14 @@ docker compose -f docker-compose.base.yml -f docker-compose.prod.override.yml ps
 ## 🔍 Post-Deployment Verification
 
 ### 1. Check Services
+
 - [ ] All containers running: `docker ps`
 - [ ] Check Traefik logs: `docker logs traefik`
 - [ ] Check n8n logs: `docker logs n8n_prod`
 - [ ] Check PostgreSQL logs: `docker logs postgres_prod`
 
 ### 2. Test Access
+
 - [ ] Visit: `https://your.domain.com`
 - [ ] SSL certificate valid (green lock)
 - [ ] n8n setup wizard appears
@@ -63,13 +70,15 @@ docker compose -f docker-compose.base.yml -f docker-compose.prod.override.yml ps
 - [ ] Test webhook: `https://your.domain.com/webhook/test`
 
 ### 3. Traefik Dashboard (Optional)
+
 - [ ] Visit: `https://traefik.your.domain.com`
 - [ ] Shows n8n service routing
 - [ ] SSL certificate working
 
 ## 🛠️ VPS Troubleshooting Commands
 
-### Service Issues:
+### Service Issues
+
 ```bash
 # Restart all services
 ./up-client.sh prod prod restart
@@ -83,7 +92,8 @@ docker logs postgres_prod --tail 50
 docker logs traefik --tail 50
 ```
 
-### SSL Certificate Issues:
+### SSL Certificate Issues
+
 ```bash
 # Check Traefik logs for certificate generation
 docker logs traefik | grep -i acme
@@ -93,7 +103,8 @@ docker logs traefik | grep -i certificate
 docker volume ls | grep letsencrypt
 ```
 
-### Resource Monitoring:
+### Resource Monitoring
+
 ```bash
 # Resource usage
 docker stats
@@ -111,7 +122,8 @@ free -h
 
 ## 📝 VPS Maintenance Notes
 
-### Backup Commands:
+### Backup Commands
+
 ```bash
 # Backup n8n data
 docker run --rm -v n8n_data_admin:/data -v $(pwd):/backup ubuntu tar czf /backup/n8n-backup-$(date +%Y%m%d).tar.gz /data
@@ -123,7 +135,8 @@ docker exec postgres_prod pg_dump -U n8n_prod_user n8n_prod > n8n-db-backup-$(da
 cp .env.prod .env.prod.backup
 ```
 
-### Update Commands:
+### Update Commands
+
 ```bash
 # Pull latest images
 docker compose -f docker-compose.base.yml -f docker-compose.prod.override.yml pull
@@ -135,7 +148,7 @@ docker compose -f docker-compose.base.yml -f docker-compose.prod.override.yml pu
 docker image prune -f
 ```
 
-## 🎯 VPS Deployment Complete When:
+## 🎯 VPS Deployment Complete When
 
 - ✅ All Docker containers running and healthy
 - ✅ `https://your.domain.com` loads with valid SSL
