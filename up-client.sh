@@ -11,8 +11,15 @@ if [ -z "$CLIENT" ]; then
 fi
 
 # Merge env files
+ENV_FILE=".env.${CLIENT}"
+if [ ! -f "$ENV_FILE" ]; then
+    echo "❌ Environment file $ENV_FILE not found!"
+    exit 1
+fi
+
+echo "📁 Loading environment from: $ENV_FILE"
 set -a
-source .env.${CLIENT}
+source "$ENV_FILE"
 set +a
 
 echo "🚀 Running '$COMMAND' for client '$CLIENT' in mode '$MODE'..."
