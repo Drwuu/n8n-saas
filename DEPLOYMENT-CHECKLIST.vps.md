@@ -30,6 +30,9 @@
 # IMPORTANT: Make sure .env.prod is in the n8n-saas directory first!
 # From local machine: scp .env.prod user@your-vps-ip:~/n8n-saas/
 
+# Run:
+sudo usermod -aG docker $USER && newgrp docker
+
 # Deploy everything automatically
 # This script will:
 # - Install Docker & Docker Compose (if missing)
