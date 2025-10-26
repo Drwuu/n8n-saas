@@ -10,7 +10,7 @@ TODO.md
 # Client-specific environment files
 # (These contain sensitive keys, passwords, and client-specific configs)
 dev.env
-prod.env
+.env.prod
 client*.env
 *-client.env
 

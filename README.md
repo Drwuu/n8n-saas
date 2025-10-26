@@ -18,11 +18,11 @@ Production-ready Docker setup for hosting multiple n8n instances with automatic 
 # 1. Clone & Configure
 git clone https://github.com/Drwuu/n8n-saas.git
 cd n8n-saas
-cp .env.example prod.env
-# Edit prod.env with your domain & credentials
+cp .env.example .env.prod
+# Edit .env.prod with your domain & credentials
 
 # 2. Deploy to VPS
-scp prod.env user@your-vps:~/n8n-saas/
+scp .env.prod user@your-vps:~/n8n-saas/
 ssh user@your-vps 'cd n8n-saas && ./deploy-vps.sh'
 
 # 3. Access
@@ -31,7 +31,7 @@ ssh user@your-vps 'cd n8n-saas && ./deploy-vps.sh'
 
 ## � Configuration
 
-Key variables in `prod.env`:
+Key variables in `.env.prod`:
 
 ```bash
 CLIENT_NAME=your-client        # Unique identifier

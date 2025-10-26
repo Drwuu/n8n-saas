@@ -15,13 +15,13 @@
 - [ ] Test key-based login: `ssh user@your-vps-ip`
 
 ### 3. Local Configuration Files
-- [ ] `prod.env` configured with domain
+- [ ] `.env.prod` configured with domain
 - [ ] Strong passwords generated  
 - [ ] Email addresses updated
 - [ ] HTTPS enabled
 
 ### 4. File Transfer to VPS
-- [ ] Copy prod.env to VPS: `scp prod.env user@your-vps-ip:~/n8n-saas/`
+- [ ] Copy .env.prod to VPS: `scp .env.prod user@your-vps-ip:~/n8n-saas/`
 - [ ] Verify files on VPS
 
 ## 🚀 Local Commands to Run
@@ -29,7 +29,7 @@
 ### Copy files to VPS:
 ```bash
 # Copy production environment file
-scp prod.env user@your-vps-ip:~/n8n-saas/
+scp .env.prod user@your-vps-ip:~/n8n-saas/
 ```
 
 ### Connect to VPS for deployment:
@@ -66,5 +66,5 @@ dig sub.yourdomain.com +short
 - ✅ DNS records configured and propagated
 - ✅ SSH access to VPS working
 - ✅ SSH keys configured (optional but recommended)
-- ✅ `prod.env` file ready for transfer
+- ✅ `.env.prod` file ready for transfer
 - ✅ Can connect to VPS for deployment

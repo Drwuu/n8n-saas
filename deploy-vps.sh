@@ -78,10 +78,10 @@ fi
 echo -e "${YELLOW}📡 Creating external proxy network...${NC}"
 docker network create proxy 2>/dev/null || echo "Network 'proxy' already exists"
 
-# Check if prod.env exists
-if [ ! -f "prod.env" ]; then
-    echo -e "${RED}❌ prod.env file not found!${NC}"
-    echo -e "${YELLOW}📝 Please create prod.env file with your production configuration${NC}"
+# Check if .env.prod exists
+if [ ! -f ".env.prod" ]; then
+    echo -e "${RED}❌ .env.prod file not found!${NC}"
+    echo -e "${YELLOW}📝 Please create .env.prod file with your production configuration${NC}"
     echo -e "${YELLOW}💡 You can use .env.example as a template${NC}"
     exit 1
 fi
@@ -101,10 +101,10 @@ echo -e "${YELLOW}🔍 Checking service status...${NC}"
 docker compose -f docker-compose.base.yml -f docker-compose.prod.override.yml ps
 
 echo -e "${GREEN}✅ Deployment completed!${NC}"
-echo -e "${GREEN}🌐 Your n8n instance should be available at: https://$(grep N8N_HOST prod.env | cut -d'=' -f2)${NC}"
+echo -e "${GREEN}🌐 Your n8n instance should be available at: https://$(grep N8N_HOST .env.prod | cut -d'=' -f2)${NC}"
 
 # Show service URLs
-N8N_HOST=$(grep N8N_HOST prod.env | cut -d'=' -f2)
+N8N_HOST=$(grep N8N_HOST .env.prod | cut -d'=' -f2)
 echo -e "${GREEN}� Service URLs:${NC}"
 echo -e "   🔧 n8n Interface: https://${N8N_HOST}"
 echo -e "   📊 Traefik Dashboard: https://traefik.${N8N_HOST#*.}"

@@ -13,18 +13,18 @@
 - [ ] Check files: `ls -la`
 
 ### 3. Configuration Files
-- [ ] Copy prod.env from local machine: `scp prod.env user@your-vps-ip:~/n8n-saas/`
-- [ ] Verify prod.env exists: `ls -la prod.env`
-- [ ] Verify domain configuration: `grep N8N_HOST prod.env`
+- [ ] Copy .env.prod from local machine: `scp .env.prod user@your-vps-ip:~/n8n-saas/`
+- [ ] Verify .env.prod exists: `ls -la .env.prod`
+- [ ] Verify domain configuration: `grep N8N_HOST .env.prod`
 - [ ] Check DNS resolution: `dig your.domain.com +short`
-- [ ] Verify environment variables: `cat prod.env`
+- [ ] Verify environment variables: `cat .env.prod`
 
 ## 🚀 VPS Deployment Commands
 
 ### Automated Deployment (Recommended):
 ```bash
-# IMPORTANT: Make sure prod.env is in the n8n-saas directory first!
-# From local machine: scp prod.env user@your-vps-ip:~/n8n-saas/
+# IMPORTANT: Make sure .env.prod is in the n8n-saas directory first!
+# From local machine: scp .env.prod user@your-vps-ip:~/n8n-saas/
 
 # Deploy everything automatically
 # This script will:
@@ -120,7 +120,7 @@ docker run --rm -v n8n_data_admin:/data -v $(pwd):/backup ubuntu tar czf /backup
 docker exec postgres_prod pg_dump -U n8n_prod_user n8n_prod > n8n-db-backup-$(date +%Y%m%d).sql
 
 # Backup configuration
-cp prod.env prod.env.backup
+cp .env.prod .env.prod.backup
 ```
 
 ### Update Commands:
