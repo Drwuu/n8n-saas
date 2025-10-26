@@ -1,0 +1,64 @@
+services:
+  traefik:
+    command:
+      # Disable insecure dashboard in prod
+      - "--api.insecure=false"
+    ports:
+      - "80:80"
+      - "443:443"
+    labels:
+      - "traefik.enable=true"
+      # Secure Traefik dashboard with authentication
+      - "traefik.http.routers.traefik.rule=Host(`${TRAEFIK_HOST:-traefik.example.com}`)"
+      - "traefik.http.routers.traefik.service=api@internal"
+      - "traefik.http.routers.traefik.entrypoints=websecure"
+      - "traefik.http.routers.traefik.tls.certresolver=${CERT_RESOLVER:-prodresolver}"
+      - "traefik.http.routers.traefik.middlewares=auth"
+      # Basic auth (generate with: htpasswd -nb admin password)
+      - "traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_AUTH:-admin:$$2y$$10$$example}"
+
+  n8n:
+    # No direct port binding in prod - Traefik handles routing
+    ports: []
+    labels:
+      # Add security headers
+      - "traefik.http.routers.n8n_${CLIENT_NAME}.middlewares=security-headers"
+      - "traefik.http.middlewares.security-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
+      - "traefik.http.middlewares.security-headers.headers.sslredirect=true"
+      - "traefik.http.middlewares.security-headers.headers.stsseconds=31536000"
+      - "traefik.http.middlewares.security-headers.headers.stsincludesubdomains=true"
+      - "traefik.http.middlewares.security-headers.headers.stspreload=true"
+
+  # Backup service for PostgreSQL
+  postgres-backup:
+    image: postgres:18rc1
+    container_name: backup_${CLIENT_NAME}
+    restart: "no"
+    environment:
+      - PGPASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data_${CLIENT_NAME}:/var/lib/postgresql/data:ro
+      - ./backups:/backups
+    command: >
+      bash -c "
+        pg_dump -h postgres -U ${POSTGRES_USER} -d ${POSTGRES_DB} > /backups/backup-${CLIENT_NAME}-$$(date +%Y%m%d-%H%M%S).sql &&
+        find /backups -name 'backup-${CLIENT_NAME}-*.sql' -mtime +7 -delete
+      "
+    depends_on:
+      - postgres
+    networks:
+      - internal
+    profiles:
+      - backup
+
+  # Monitoring with Prometheus/Grafana
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus_${CLIENT_NAME}
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - internal
+    profiles:
+      - monitoring

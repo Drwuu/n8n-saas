@@ -1,0 +1,104 @@
+# Environment files with sensitive data
+*.env
+.env.*
+!.env.example
+
+# Local working files (keep template, ignore personalized versions)
+DEPLOYMENT-CHECKLIST.md
+TODO.md
+
+# Client-specific environment files
+# (These contain sensitive keys, passwords, and client-specific configs)
+dev.env
+prod.env
+client*.env
+*-client.env
+
+# Docker & Container data
+docker-compose.override.yml
+.docker
+docker-data
+volumes
+
+# N8N data and backups
+n8n-data-backup.tar.gz
+n8n-files-backup.tar.gz
+backup.sql
+*.backup
+backups
+
+# PostgreSQL & Database files
+*.sql
+*.db
+*.sqlite
+*.sqlite3
+database
+db-data
+
+# SSL certificates and secrets
+certs
+ssl
+secrets
+traefik_letsencrypt
+
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# IDE & Editor files
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+tmp
+temp
+*.tmp
+*.temp
+
+# Node modules (if any)
+node_modules
+npm-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+
+# Build artifacts
+dist
+build
+out
+
+# Coverage reports
+coverage
+*.lcov
+
+# Dependency directories
+vendor
+
+# Archives
+*.zip
+*.tar.gz
+*.rar
+*.7z

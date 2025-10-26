@@ -1,0 +1,107 @@
+networks:
+  proxy:
+    external: true
+  internal:
+    driver: bridge
+
+services:
+  traefik:
+    image: traefik:v3.5.2
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.${CERT_RESOLVER}.acme.httpchallenge=true"
+      - "--certificatesresolvers.${CERT_RESOLVER}.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.${CERT_RESOLVER}.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.${CERT_RESOLVER}.acme.storage=/letsencrypt/acme.json"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - traefik_letsencrypt:/letsencrypt
+    networks:
+      - proxy
+
+  postgres:
+    image: postgres:18rc1
+    container_name: postgres_${CLIENT_NAME}
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
+    volumes:
+      - postgres_data_${CLIENT_NAME}:/var/lib/postgresql/data
+    networks:
+      - internal
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  n8n:
+    image: n8nio/n8n:1.112.3
+    container_name: n8n_${CLIENT_NAME}
+    restart: unless-stopped
+    environment:
+      - DB_TYPE=postgresdb
+      - DB_POSTGRESDB_HOST=postgres
+      - DB_POSTGRESDB_PORT=5432
+      - DB_POSTGRESDB_DATABASE=${POSTGRES_DB}
+      - DB_POSTGRESDB_USER=${POSTGRES_USER}
+      - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
+      - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
+      - N8N_HOST=${N8N_HOST}
+      - N8N_PORT=5678
+      - N8N_PROTOCOL=${N8N_PROTOCOL}
+      - NODE_ENV=${NODE_ENV}
+      - N8N_LOG_LEVEL=${N8N_LOG_LEVEL}
+      - N8N_SECURE_COOKIE=${N8N_SECURE_COOKIE}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - n8n_data_${CLIENT_NAME}:/home/node/.n8n
+      - n8n_files_${CLIENT_NAME}:/home/node/files
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.n8n_${CLIENT_NAME}.rule=Host(`${N8N_HOST}`)"
+      - "traefik.http.routers.n8n_${CLIENT_NAME}.entrypoints=websecure"
+      - "traefik.http.routers.n8n_${CLIENT_NAME}.tls.certresolver=${CERT_RESOLVER}"
+      - "traefik.http.services.n8n_${CLIENT_NAME}.loadbalancer.server.port=5678"
+    networks:
+      - proxy
+      - internal
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5678/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  postgres_data_${CLIENT_NAME}:
+    driver: local
+    name: postgres_data_${CLIENT_NAME}
+  n8n_data_${CLIENT_NAME}:
+    driver: local
+    name: n8n_data_${CLIENT_NAME}
+  n8n_files_${CLIENT_NAME}:
+    driver: local
+    name: n8n_files_${CLIENT_NAME}
+  traefik_letsencrypt:
+    driver: local
+    name: traefik_letsencrypt_${CLIENT_NAME}
