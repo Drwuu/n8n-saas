@@ -1,8 +1,18 @@
 services:
   traefik:
     command:
-      # Disable insecure dashboard in prod
+      # Production Traefik configuration
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
       - "--api.insecure=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.${CERT_RESOLVER}.acme.httpchallenge=true"
+      - "--certificatesresolvers.${CERT_RESOLVER}.acme.httpchallenge.entrypoint=web"
+      - "--certificatesresolvers.${CERT_RESOLVER}.acme.email=${ACME_EMAIL}"
+      - "--certificatesresolvers.${CERT_RESOLVER}.acme.storage=/letsencrypt/acme.json"
     ports:
       - "80:80"
       - "443:443"
@@ -21,13 +31,20 @@ services:
     # No direct port binding in prod - Traefik handles routing
     ports: []
     labels:
-      # Add security headers
-      - "traefik.http.routers.n8n_${CLIENT_NAME}.middlewares=security-headers"
-      - "traefik.http.middlewares.security-headers.headers.customrequestheaders.X-Forwarded-Proto=https"
-      - "traefik.http.middlewares.security-headers.headers.sslredirect=true"
-      - "traefik.http.middlewares.security-headers.headers.stsseconds=31536000"
-      - "traefik.http.middlewares.security-headers.headers.stsincludesubdomains=true"
-      - "traefik.http.middlewares.security-headers.headers.stspreload=true"
+      # Override n8n router for HTTPS
+      - "traefik.http.routers.n8n_${CLIENT_NAME}.entrypoints=websecure"
+      - "traefik.http.routers.n8n_${CLIENT_NAME}.tls.certresolver=${CERT_RESOLVER}"
+      - "traefik.http.routers.n8n_${CLIENT_NAME}.middlewares=security-headers@docker"
+      # Security headers middleware
+      - "traefik.http.middlewares.security-headers.headers.stsSeconds=31536000"
+      - "traefik.http.middlewares.security-headers.headers.stsIncludeSubdomains=true"
+      - "traefik.http.middlewares.security-headers.headers.stsPreload=true"
+      - "traefik.http.middlewares.security-headers.headers.forceSTSHeader=true"
+      - "traefik.http.middlewares.security-headers.headers.frameDeny=true"
+      - "traefik.http.middlewares.security-headers.headers.contentTypeNosniff=true"
+      - "traefik.http.middlewares.security-headers.headers.browserXssFilter=true"
+      - "traefik.http.middlewares.security-headers.headers.referrerPolicy=strict-origin-when-cross-origin"
+      - "traefik.http.middlewares.security-headers.headers.permissionsPolicy=geolocation=(), microphone=(), camera=()"
 
   # Backup service for PostgreSQL
   postgres-backup:
@@ -37,7 +54,7 @@ services:
     environment:
       - PGPASSWORD=${POSTGRES_PASSWORD}
     volumes:
-      - postgres_data_${CLIENT_NAME}:/var/lib/postgresql/data:ro
+      - postgres_data:/var/lib/postgresql/data:ro
       - ./backups:/backups
     command: >
       bash -c "

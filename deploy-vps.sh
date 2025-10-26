@@ -64,12 +64,15 @@ if command -v ufw &> /dev/null; then
     sudo ufw allow 80/tcp 2>/dev/null || true
     sudo ufw allow 443/tcp 2>/dev/null || true
     
+    # Configure UFW to allow Docker routing (fixes container communication)
+    sudo ufw default allow routed 2>/dev/null || true
+    
     # Enable firewall if not already enabled
     if ! sudo ufw status | grep -q "Status: active"; then
         echo "y" | sudo ufw enable 2>/dev/null || true
     fi
     
-    echo -e "${GREEN}✅ Firewall configured (ports 22, 80, 443 open)${NC}"
+    echo -e "${GREEN}✅ Firewall configured (ports 22, 80, 443 open + Docker routing enabled)${NC}"
 else
     echo -e "${YELLOW}⚠️  UFW not found. Please manually configure firewall to allow ports 80 and 443${NC}"
 fi
@@ -98,8 +101,27 @@ if [ -f "DEPLOYMENT-CHECKLIST.vps.md" ]; then
     git update-index --skip-worktree DEPLOYMENT-CHECKLIST.vps.md 2>/dev/null || echo "Note: DEPLOYMENT-CHECKLIST.vps.md not in git or already configured"
 fi
 
+ENV_FILE=".env.prod"
+if [ ! -f "$ENV_FILE" ]; then
+    echo "❌ Environment file $ENV_FILE not found!"
+    exit 1
+fi
+
+echo "📁 Loading environment from: $ENV_FILE"
+set -a
+source "$ENV_FILE"
+set +a
+
 # Make deployment script executable
 chmod +x up-client.sh
+chmod +x create-volumes.sh
+
+# Create Docker volumes
+echo -e "${YELLOW}📦 Creating Docker volumes...${NC}"
+./create-volumes.sh
+
+# Wait a moment for volumes to be created
+sleep 2
 
 # Deploy production environment
 echo -e "${YELLOW}🏗️ Deploying production environment...${NC}"

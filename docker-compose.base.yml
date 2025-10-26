@@ -12,12 +12,13 @@ services:
     command:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
+      - "--api.insecure=true"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.${CERT_RESOLVER}.acme.httpchallenge=true"
-      - "--certificatesresolvers.${CERT_RESOLVER}.acme.httpchallenge.entrypoint=web"
-      - "--certificatesresolvers.${CERT_RESOLVER}.acme.email=${ACME_EMAIL}"
-      - "--certificatesresolvers.${CERT_RESOLVER}.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
       - traefik_letsencrypt:/letsencrypt
@@ -34,7 +35,7 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_INITDB_ARGS=--auth-host=scram-sha-256
     volumes:
-      - postgres_data_${CLIENT_NAME}:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - internal
     deploy:
@@ -70,13 +71,12 @@ services:
       postgres:
         condition: service_healthy
     volumes:
-      - n8n_data_${CLIENT_NAME}:/home/node/.n8n
-      - n8n_files_${CLIENT_NAME}:/home/node/files
+      - n8n_data:/home/node/.n8n
+      - n8n_files:/home/node/files
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.n8n_${CLIENT_NAME}.rule=Host(`${N8N_HOST}`)"
-      - "traefik.http.routers.n8n_${CLIENT_NAME}.entrypoints=websecure"
-      - "traefik.http.routers.n8n_${CLIENT_NAME}.tls.certresolver=${CERT_RESOLVER}"
+      - "traefik.http.routers.n8n_${CLIENT_NAME}.entrypoints=web"
       - "traefik.http.services.n8n_${CLIENT_NAME}.loadbalancer.server.port=5678"
     networks:
       - proxy
@@ -93,15 +93,15 @@ services:
       retries: 3
 
 volumes:
-  postgres_data_${CLIENT_NAME}:
-    driver: local
+  postgres_data:
+    external: true
     name: postgres_data_${CLIENT_NAME}
-  n8n_data_${CLIENT_NAME}:
-    driver: local
+  n8n_data:
+    external: true
     name: n8n_data_${CLIENT_NAME}
-  n8n_files_${CLIENT_NAME}:
-    driver: local
+  n8n_files:
+    external: true
     name: n8n_files_${CLIENT_NAME}
   traefik_letsencrypt:
-    driver: local
+    external: true
     name: traefik_letsencrypt_${CLIENT_NAME}
