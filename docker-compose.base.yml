@@ -62,8 +62,9 @@ services:
       - DB_POSTGRESDB_PASSWORD=${POSTGRES_PASSWORD}
       - N8N_ENCRYPTION_KEY=${N8N_ENCRYPTION_KEY}
       - N8N_HOST=${N8N_HOST}
-      - N8N_PORT=5678
+      - N8N_PORT=${N8N_PORT}
       - N8N_PROTOCOL=${N8N_PROTOCOL}
+      - N8N_EDITOR_BASE_URL=${N8N_EDITOR_BASE_URL}
       - NODE_ENV=${NODE_ENV}
       - N8N_LOG_LEVEL=${N8N_LOG_LEVEL}
       - N8N_SECURE_COOKIE=${N8N_SECURE_COOKIE}
@@ -77,7 +78,7 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.n8n_${CLIENT_NAME}.rule=Host(`${N8N_HOST}`)"
       - "traefik.http.routers.n8n_${CLIENT_NAME}.entrypoints=web"
-      - "traefik.http.services.n8n_${CLIENT_NAME}.loadbalancer.server.port=5678"
+      - "traefik.http.services.n8n_${CLIENT_NAME}.loadbalancer.server.port=${N8N_PORT}"
     networks:
       - proxy
       - internal
@@ -87,7 +88,7 @@ services:
           memory: 1G
           cpus: '1.0'
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:5678/ || exit 1"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:${N8N_PORT}/ || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3

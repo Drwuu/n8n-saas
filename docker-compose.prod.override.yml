@@ -4,6 +4,7 @@ services:
       # Production Traefik configuration
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.network=proxy"
       - "--api.insecure=false"
       - "--entrypoints.web.address=:80"
       - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
@@ -28,8 +29,8 @@ services:
       - "traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_AUTH:-admin:$$2y$$10$$example}"
 
   n8n:
-    # No direct port binding in prod - Traefik handles routing
-    ports: []
+    environment:
+      - WEBHOOK_URL=${WEBHOOK_URL}
     labels:
       # Override n8n router for HTTPS
       - "traefik.http.routers.n8n_${CLIENT_NAME}.entrypoints=websecure"
