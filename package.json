@@ -2,12 +2,8 @@
   "name": "n8n-code-development",
   "version": "1.0.0",
   "description": "Development environment for n8n code nodes",
-  "scripts": {
-    "build": "tsc",
-    "watch": "tsc --watch",
-    "clean": "rm -rf dist"
-  },
   "devDependencies": {
+    "@types/node": "^24.9.2",
     "n8n-workflow": "^1.115.0"
   },
   "dependencies": {
