@@ -7,7 +7,7 @@ function execute(this: IExecuteFunctions) {
   const mergedResult = {
     userPrompt: "",
     systemPrompt: "",
-    previousSteps: [] as any[],
+    previousSteps: new Array(),
     newEvidence: ""
   };
 
@@ -23,7 +23,7 @@ function execute(this: IExecuteFunctions) {
     }
     
     if (data.previousSteps && Array.isArray(data.previousSteps)) {
-      mergedResult.previousSteps = mergedResult.previousSteps.concat(data.previousSteps);
+      mergedResult.previousSteps.push(...data.previousSteps);
     }
     
     if (data.newEvidence) {

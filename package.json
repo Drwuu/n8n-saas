@@ -2,6 +2,9 @@
   "name": "n8n-code-development",
   "version": "1.0.0",
   "description": "Development environment for n8n code nodes",
+  "scripts": {
+    "build-n8n": "node build-n8n.js"
+  },
   "devDependencies": {
     "@types/node": "^24.9.2",
     "n8n-workflow": "^1.115.0"
