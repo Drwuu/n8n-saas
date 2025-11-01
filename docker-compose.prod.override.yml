@@ -1,40 +1,11 @@
 services:
-  traefik:
-    command:
-      # Production Traefik configuration
-      - "--providers.docker=true"
-      - "--providers.docker.exposedbydefault=false"
-      - "--providers.docker.network=proxy"
-      - "--api.insecure=false"
-      - "--entrypoints.web.address=:80"
-      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
-      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
-      - "--entrypoints.websecure.address=:443"
-      - "--certificatesresolvers.${CERT_RESOLVER}.acme.httpchallenge=true"
-      - "--certificatesresolvers.${CERT_RESOLVER}.acme.httpchallenge.entrypoint=web"
-      - "--certificatesresolvers.${CERT_RESOLVER}.acme.email=${ACME_EMAIL}"
-      - "--certificatesresolvers.${CERT_RESOLVER}.acme.storage=/letsencrypt/acme.json"
-    ports:
-      - "80:80"
-      - "443:443"
-    labels:
-      - "traefik.enable=true"
-      # Secure Traefik dashboard with authentication
-      - "traefik.http.routers.traefik.rule=Host(`${TRAEFIK_HOST:-traefik.example.com}`)"
-      - "traefik.http.routers.traefik.service=api@internal"
-      - "traefik.http.routers.traefik.entrypoints=websecure"
-      - "traefik.http.routers.traefik.tls.certresolver=${CERT_RESOLVER:-prodresolver}"
-      - "traefik.http.routers.traefik.middlewares=auth"
-      # Basic auth (generate with: htpasswd -nb admin password)
-      - "traefik.http.middlewares.auth.basicauth.users=${TRAEFIK_AUTH:-admin:$$2y$$10$$example}"
-
   n8n:
     environment:
       - WEBHOOK_URL=${WEBHOOK_URL}
     labels:
       # Override n8n router for HTTPS
       - "traefik.http.routers.n8n_${CLIENT_NAME}.entrypoints=websecure"
-      - "traefik.http.routers.n8n_${CLIENT_NAME}.tls.certresolver=${CERT_RESOLVER}"
+      - "traefik.http.routers.n8n_${CLIENT_NAME}.tls.certresolver=letsencrypt"
       - "traefik.http.routers.n8n_${CLIENT_NAME}.middlewares=security-headers@docker"
       # Security headers middleware
       - "traefik.http.middlewares.security-headers.headers.stsSeconds=31536000"

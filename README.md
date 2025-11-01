@@ -15,17 +15,23 @@ Production-ready Docker setup for hosting multiple n8n instances with automatic 
 **Prerequisites:** VPS + Domain + SSH access
 
 ```bash
-# 1. Clone & Configure
+# 1. Set up shared Traefik (once per server)
+git clone https://github.com/Drwuu/traefik-shared.git ~/traefik
+cd ~/traefik
+cp .env.example .env
+# Edit .env with ACME_EMAIL, TRAEFIK_HOST, TRAEFIK_AUTH
+docker compose up -d
+
+# 2. Clone & Configure n8n-saas
 git clone https://github.com/Drwuu/n8n-saas.git
 cd n8n-saas
 cp .env.example .env.prod
 # Edit .env.prod with your domain & credentials
 
-# 2. Deploy to VPS
-scp .env.prod user@your-vps:~/n8n-saas/
-ssh user@your-vps 'cd n8n-saas && ./deploy-vps.sh'
+# 3. Deploy n8n client
+./up-client.sh <client-name> prod up -d
 
-# 3. Access
+# 4. Access
 # Visit https://your-domain.com
 ```
 
@@ -84,4 +90,4 @@ Fork → Branch → Commit → PR
 
 ---
 
-**Made with ❤️ for automation**
+## **Made with ❤️ for automation**
