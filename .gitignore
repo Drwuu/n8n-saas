@@ -6,6 +6,7 @@
 # Local working files (keep template, ignore personalized versions)
 DEPLOYMENT-CHECKLIST.md
 TODO.md
+codenode.ts
 
 # Client-specific environment files
 # (These contain sensitive keys, passwords, and client-specific configs)
