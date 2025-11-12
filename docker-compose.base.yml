@@ -23,6 +23,10 @@ services:
     networks:
       - internal
       - monitoring
+    labels:
+      - "prometheus.enable=false"
+      - "service=postgres"
+      - "client=${CLIENT_NAME}"
     deploy:
       resources:
         limits:
@@ -64,8 +68,14 @@ services:
       - "traefik.http.routers.n8n_${CLIENT_NAME}.rule=Host(`${N8N_HOST}`)"
       - "traefik.http.routers.n8n_${CLIENT_NAME}.entrypoints=web"
       - "traefik.http.services.n8n_${CLIENT_NAME}.loadbalancer.server.port=${N8N_PORT}"
-      - "prometheus_port=${N8N_PORT}"
+      # Prometheus monitoring labels
+      - "prometheus.enable=true"
+      - "prometheus.port=${N8N_PORT}"
+      - "prometheus.path=/metrics"
+      - "prometheus.job=n8n"
+      - "prometheus.instance=${CLIENT_NAME}"
       - "service=n8n"
+      - "client=${CLIENT_NAME}"
     networks:
       - proxy
       - internal
