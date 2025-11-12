@@ -1,12 +1,53 @@
 #!/usr/bin/env bash
-# Usage: ./up-client.sh <client> <mode: dev|prod> [command: up|down]
+# N8N Multi-Client Deployment Script
+
+show_help() {
+  cat << EOF
+N8N Multi-Client Deployment Script
+
+Usage: ./up-client.sh <client> [mode] [command]
+
+Arguments:
+  client          Client name (required) - must have corresponding .env.<client> file
+  mode            Deployment mode (optional, default: dev)
+                  - dev: Local development with HTTP
+                  - prod: Production with HTTPS via Traefik
+  command         Docker Compose command (optional, default: up)
+                  - up: Start services in detached mode
+                  - down: Stop and remove services
+                  - logs: View service logs
+                  - ps: List running services
+                  - restart: Restart services
+
+Examples:
+  ./up-client.sh playsmart                    # Start playsmart in dev mode
+  ./up-client.sh playsmart prod               # Start playsmart in production
+  ./up-client.sh playsmart prod down          # Stop playsmart production
+  ./up-client.sh playsmart dev logs           # View playsmart dev logs
+  ./up-client.sh playsmart prod restart       # Restart playsmart production
+
+Requirements:
+  - .env.<client> file must exist
+  - Docker networks (proxy, monitoring) must be created for prod mode
+  - Traefik must be running for prod mode HTTPS
+
+EOF
+}
+
+# Show help if requested
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+  show_help
+  exit 0
+fi
 
 CLIENT=$1
 MODE=${2:-dev}        # default = dev
 COMMAND=${3:-up}      # default = up
 
 if [ -z "$CLIENT" ]; then
-  echo "❌ Please provide a client name (e.g. ./up-client.sh client1 dev up)"
+  echo "❌ Please provide a client name"
+  echo ""
+  show_help
   exit 1
 fi
 

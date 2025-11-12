@@ -41,7 +41,7 @@
 ├── up-client.sh                      # Client launcher script
 ├── create-volumes.sh                 # Volume creation helper
 ├── backup-all.sh                     # Automated backup script
-├── .env.<client>                    # Production environment (CLIENT_NAME=<client>)
+├── .env.<client-name>                # Production environment (CLIENT_NAME=<client>)
 ├── gcs-key/
 │   └── service-account-key.json      # GCS credentials (gitignored)
 └── backups/                          # Local backup storage (gitignored)
@@ -49,7 +49,7 @@
 
 ### Environment Files
 
-**.env.<client>** contains:
+**.env.<client-name>** contains:
 - ✅ CLIENT_NAME
 - ✅ N8N_HOST, N8N_PROTOCOL, N8N_PORT
 - ✅ POSTGRES credentials
@@ -90,7 +90,7 @@ docker compose --profile backup up postgres-backup
 **Restore Procedure:**
 ```bash
 # 1. Download from GCS
-gsutil cp gs://<client>-n8n-postgres-backup/n8n-backups/<client>/backup-<client>-YYYYMMDD-HHMMSS.dump ./restore.dump
+gsutil cp gs://<your-backup-bucket>/n8n-backups/<client>/backup-<client>-YYYYMMDD-HHMMSS.dump ./restore.dump
 
 # 2. Stop n8n
 ./up-client.sh <client> prod down n8n
@@ -116,7 +116,7 @@ docker compose exec postgres pg_restore -U ${POSTGRES_USER} -d ${POSTGRES_DB} -c
 - ✅ Backup: internal only
 
 **Secrets Management:**
-- ✅ `.env.<client>` gitignored (via `.env.*` pattern)
+- ✅ `.env.<client-name>` gitignored (via `.env.*` pattern)
 - ✅ `gcs-key/` gitignored
 - ✅ Encryption keys unique per client
 
@@ -170,18 +170,9 @@ cp .env.example .env.newclient
 - **Total per client: Minimal**
 
 **Scalability:**
-- Current: 1 client (<client>)
+- Current: Multiple clients supported
 - Capacity: 10+ clients per VPS
 - Bottleneck: VPS resources, not architecture
-
-### Known Configurations
-
-**Current Client:**
-- Name: `<client>`
-- Domain: `n8n.<client>.cloud`
-- GCS Bucket: `<client>-n8n-postgres-backup` (us-central1)
-- Monitoring: Connected to shared Prometheus
-- Backups: Daily at 2 AM
 
 ### Next Steps (Optional)
 
