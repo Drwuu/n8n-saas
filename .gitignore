@@ -3,15 +3,22 @@
 .env.*
 !.env.example
 
+# Google Cloud Service Account keys
+gcs-key
+
 # Local working files (keep template, ignore personalized versions)
 DEPLOYMENT-CHECKLIST.md
 TODO.md
-codenode.ts
+
+# Templates
+codenodeTemplate.ts
 
 # Client-specific environment files
 # (These contain sensitive keys, passwords, and client-specific configs)
 dev.env
-.env.prod
+.env.playsmart
+.env.*
+!.env.example
 client*.env
 *-client.env
 

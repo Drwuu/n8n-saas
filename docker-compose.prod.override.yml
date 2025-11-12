@@ -18,20 +18,32 @@ services:
       - "traefik.http.middlewares.security-headers.headers.referrerPolicy=strict-origin-when-cross-origin"
       - "traefik.http.middlewares.security-headers.headers.permissionsPolicy=geolocation=(), microphone=(), camera=()"
 
-  # Backup service for PostgreSQL
+  # Backup service for PostgreSQL with Google Cloud Storage
   postgres-backup:
-    image: postgres:18rc1
+    image: google/cloud-sdk:alpine
     container_name: backup_${CLIENT_NAME}
     restart: "no"
     environment:
       - PGPASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_HOST=postgres
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - GCS_BUCKET=${GCS_BACKUP_BUCKET}
+      - GOOGLE_APPLICATION_CREDENTIALS=/gcs-key/service-account-key.json
     volumes:
-      - postgres_data:/var/lib/postgresql/data:ro
       - ./backups:/backups
+      - ./gcs-key:/gcs-key:ro
     command: >
-      bash -c "
-        pg_dump -h postgres -U ${POSTGRES_USER} -d ${POSTGRES_DB} > /backups/backup-${CLIENT_NAME}-$$(date +%Y%m%d-%H%M%S).sql &&
-        find /backups -name 'backup-${CLIENT_NAME}-*.sql' -mtime +7 -delete
+      sh -c "
+        apk add --no-cache postgresql18-client &&
+        BACKUP_FILE=backup-${CLIENT_NAME}-$$(date +%Y%m%d-%H%M%S).dump &&
+        pg_dump -h $$POSTGRES_HOST -U $$POSTGRES_USER -d $$POSTGRES_DB -Fc -f /backups/$$BACKUP_FILE &&
+        echo 'Backup created: '$$BACKUP_FILE &&
+        gcloud auth activate-service-account --key-file=$$GOOGLE_APPLICATION_CREDENTIALS &&
+        gsutil cp /backups/$$BACKUP_FILE gs://$$GCS_BUCKET/n8n-backups/${CLIENT_NAME}/$$BACKUP_FILE &&
+        echo 'Backup uploaded to GCS' &&
+        find /backups -name 'backup-${CLIENT_NAME}-*.dump' -mtime +7 -delete &&
+        gsutil -m rm gs://$$GCS_BUCKET/n8n-backups/${CLIENT_NAME}/**backup-${CLIENT_NAME}-*.dump --quiet || true
       "
     depends_on:
       - postgres
@@ -39,15 +51,3 @@ services:
       - internal
     profiles:
       - backup
-
-  # Monitoring with Prometheus/Grafana
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus_${CLIENT_NAME}
-    restart: unless-stopped
-    volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-    networks:
-      - internal
-    profiles:
-      - monitoring

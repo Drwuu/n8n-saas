@@ -4,6 +4,9 @@ networks:
     name: proxy
   internal:
     driver: bridge
+  monitoring:
+    external: true
+    name: monitoring
 
 services:
   postgres:
@@ -19,6 +22,7 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - internal
+      - monitoring
     deploy:
       resources:
         limits:
@@ -60,9 +64,12 @@ services:
       - "traefik.http.routers.n8n_${CLIENT_NAME}.rule=Host(`${N8N_HOST}`)"
       - "traefik.http.routers.n8n_${CLIENT_NAME}.entrypoints=web"
       - "traefik.http.services.n8n_${CLIENT_NAME}.loadbalancer.server.port=${N8N_PORT}"
+      - "prometheus_port=${N8N_PORT}"
+      - "service=n8n"
     networks:
       - proxy
       - internal
+      - monitoring
     deploy:
       resources:
         limits:

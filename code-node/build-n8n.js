@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+// This script compiles TypeScript code and converts it to n8n-compatible JavaScript code.
+
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');

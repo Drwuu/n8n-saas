@@ -14,6 +14,5 @@ echo "Creating volumes for client: $CLIENT_NAME"
 docker volume create postgres_data_${CLIENT_NAME}
 docker volume create n8n_data_${CLIENT_NAME}
 docker volume create n8n_files_${CLIENT_NAME}
-docker volume create traefik_letsencrypt_${CLIENT_NAME}
 
 echo "Volumes created successfully!"

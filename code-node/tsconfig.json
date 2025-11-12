@@ -4,7 +4,7 @@
     "module": "commonjs",
     "lib": ["ES2020"],
     "declaration": true,
-    "outDir": "./dist",
+    "outDir": "code-node/dist",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -27,6 +27,6 @@
   ],
   "exclude": [
     "node_modules",
-    "dist"
+    "code-node/dist"
   ]
 }
