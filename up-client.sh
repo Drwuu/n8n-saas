@@ -63,6 +63,40 @@ set -a
 source $ENV_FILE
 set +a
 
+# Check/create required Docker networks
+echo "🔍 Checking Docker networks..."
+
+# External networks (shared across clients)
+for network in proxy monitoring; do
+  if ! docker network ls | grep -q " $network "; then
+    echo "📡 Creating external network: $network"
+    docker network create $network
+  fi
+done
+
+# Internal network (per-client)
+INTERNAL_NETWORK="internal_${CLIENT}"
+if ! docker network ls | grep -q " $INTERNAL_NETWORK "; then
+  echo "📡 Creating internal network: $INTERNAL_NETWORK"
+  docker network create $INTERNAL_NETWORK
+fi
+
+# Check/create Docker volumes if command is 'up'
+if [ "$COMMAND" = "up" ]; then
+  echo "🔍 Checking Docker volumes..."
+  
+  POSTGRES_VOLUME="postgres_data_${CLIENT}"
+  N8N_VOLUME="n8n_data_${CLIENT}"
+  N8N_FILES_VOLUME="n8n_files_${CLIENT}"
+  
+  for volume in $POSTGRES_VOLUME $N8N_VOLUME $N8N_FILES_VOLUME; do
+    if ! docker volume ls | grep -q " $volume "; then
+      echo "💾 Creating volume: $volume"
+      docker volume create $volume
+    fi
+  done
+fi
+
 echo "🚀 Running '$COMMAND' for client '$CLIENT' in mode '$MODE'..."
 echo "Using N8N_HOST=$N8N_HOST"
 
