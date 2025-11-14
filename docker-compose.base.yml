@@ -3,7 +3,8 @@ networks:
     external: true
     name: proxy
   internal:
-    driver: bridge
+    external: true
+    name: internal_${CLIENT_NAME}
   monitoring:
     external: true
     name: monitoring
